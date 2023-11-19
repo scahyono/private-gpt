@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 exports.handler = async (event) => {
     const { prompt, apiKey } = JSON.parse(event.body);
 
-    const response = await fetch('https://api.openai.com/v1/engines/davinci-codex/completions', {
+    const response = await fetch('https://api.openai.com/v1/engines/text-davinci-004/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

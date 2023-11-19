@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OpenAI API Example with Netlify Proxy</title>
+    <title>Private GPT</title>
     <script>
         // Function to store the API Key in LocalStorage
         function storeApiKey() {
@@ -11,6 +11,48 @@
         }
 
         // Function to make an API request to the Netlify Function
+        // Create a new db request for a "messages" database.
+        var request = indexedDB.open("messages", 1);
+
+        request.onerror = function(event) {
+            console.log("error: ");
+        };
+
+        request.onsuccess = function(event) {
+            db = request.result;
+            console.log("success: "+ db);
+            showPreviousMessages();
+        };
+
+        request.onupgradeneeded = function(event) {
+            var db = event.target.result;
+            var objectStore = db.createObjectStore("message", {keyPath: "id", autoIncrement: true});
+        }
+
+        function showPreviousMessages() {
+            var objectStore = db.transaction("message").objectStore("message");
+            objectStore.openCursor().onsuccess = function(event) {
+                var cursor = event.target.result;
+                if (cursor) {
+                    var listItem = document.createElement('li');
+                    listItem.textContent = 'Sent: ' + cursor.value.sent + ', Received: ' + cursor.value.received;
+                    document.getElementById('message-list').appendChild(listItem);
+                    cursor.continue();
+                }
+            };
+        }
+
+        function clearMessages() {
+            var request = db.transaction(["message"], "readwrite")
+            .objectStore("message")
+            .clear();
+
+            request.onsuccess = function(event) {
+                document.getElementById('message-list').innerHTML = '';
+                //alert("All messages have been cleared from your database.");
+            };
+        }
+
         async function callOpenAiApi() {
             const apiKey = localStorage.getItem('openai_api_key');
             if (!apiKey) {
@@ -18,29 +60,46 @@
                 return;
             }
 
+            const prompt = document.getElementById('message-input').value;
             const response = await fetch('/.netlify/functions/callOpenAi', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    prompt: "Translate the following English text to French: 'Hello, world!'",
+                    prompt: prompt,
                     apiKey: apiKey
                 })
             });
 
             const data = await response.json();
             const content = data.choices[0].message.content;
-            document.getElementById('api-response').textContent = content;
+
+            // Add the sent and received messages to the database
+            var request = db.transaction(["message"], "readwrite")
+            .objectStore("message")
+            .add({ sent: prompt, received: content });
+
+            request.onsuccess = function(event) {
+                var listItem = document.createElement('li');
+                listItem.textContent = 'Sent: ' + prompt + ', Received: ' + content;
+                document.getElementById('message-list').appendChild(listItem);
+            };
+
+            request.onerror = function(event) {
+                alert("Unable to add data\r\nMessage is already exist in your database! ");
+            }
         }
     </script>
 </head>
 <body>
-    <h1>OpenAI API Example</h1>
+    <h1>Private GPT</h1>
     <input type="text" id="api-key" placeholder="Enter OpenAI API Key" />
     <button onclick="storeApiKey()">Store API Key</button>
     <br><br>
-    <button onclick="callOpenAiApi()">Call OpenAI API</button>
-    <pre id="api-response"></pre>
+    <ul id="message-list"></ul>
+    <input type="text" id="message-input" placeholder="Enter your message" />
+    <button onclick="callOpenAiApi()">⬆️</button>
+    <button onclick="clearMessages()">🗑️</button>
 </body>
 </html>

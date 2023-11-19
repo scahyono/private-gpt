@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenAI API Example with Netlify Proxy</title>
+    <script>
+        // Function to store the API Key in LocalStorage
+        function storeApiKey() {
+            const apiKey = document.getElementById('api-key').value;
+            localStorage.setItem('openai_api_key', apiKey);
+            alert('API Key stored in LocalStorage');
+        }
+
+        // Function to make an API request to the Netlify Function
+        async function callOpenAiApi() {
+            const apiKey = localStorage.getItem('openai_api_key');
+            if (!apiKey) {
+                alert('No API Key found. Please enter and store the API Key first.');
+                return;
+            }
+
+            const response = await fetch('/.netlify/functions/callOpenAi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prompt: "Translate the following English text to French: 'Hello, world!'",
+                    apiKey: apiKey
+                })
+            });
+
+            const data = await response.json();
+            document.getElementById('api-response').textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</head>
+<body>
+    <h1>OpenAI API Example</h1>
+    <input type="text" id="api-key" placeholder="Enter OpenAI API Key" />
+    <button onclick="storeApiKey()">Store API Key</button>
+    <br><br>
+    <button onclick="callOpenAiApi()">Call OpenAI API</button>
+    <pre id="api-response"></pre>
+</body>
+</html>

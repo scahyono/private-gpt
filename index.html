@@ -10,6 +10,12 @@
             if (apiKey) {
                 document.getElementById('api-key').placeholder = "Change OpenAI API Key";
             }
+            document.getElementById('message-input').addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevents the default action (form submission)
+                    callOpenAiApi();
+                }
+            });
         };
 
         // Function to store the API Key in LocalStorage
@@ -69,14 +75,34 @@
                 return;
             }
 
+            // Retrieve all previous messages from the IndexedDB
+            let previousMessages = '';
+            const transaction = db.transaction(["message"], "readonly");
+            const objectStore = transaction.objectStore("message");
+            var request = objectStore.openCursor();
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    previousMessages += '⬆️: ' + cursor.value.sent + ', ⬇️: ' + cursor.value.received;
+                    cursor.continue();
+                }
+            };
+
+            // Wait for the transaction to finish
+            await new Promise((resolve) => transaction.oncomplete = resolve);
+
             const prompt = document.getElementById('message-input').value;
+            // Clear the message-input field
+            document.getElementById('message-input').value = '';
+
+            const promptToSend = previousMessages + '⬆️: ' + prompt;
             const response = await fetch('/.netlify/functions/callOpenAi', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    prompt: prompt,
+                    prompt: promptToSend,
                     apiKey: apiKey
                 })
             });

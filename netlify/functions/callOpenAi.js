@@ -3,15 +3,16 @@ const fetch = require('node-fetch');
 exports.handler = async (event) => {
     const { prompt, apiKey } = JSON.parse(event.body);
 
-    const response = await fetch('https://api.openai.com/v1/engines/text-davinci-004/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + apiKey
         },
         body: JSON.stringify({
-            prompt: prompt,
-            max_tokens: 60
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.7
         })
     });
 

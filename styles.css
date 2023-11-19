@@ -5,6 +5,14 @@ body {
     padding: 20px;
 }
 
+/* Styles for screens that are less than 600px wide */
+@media screen and (max-width: 600px) {
+    body {
+        font-size: 18px;
+    }
+    /* Add more styles as needed */
+}
+
 h1 {
     color: #444;
 }

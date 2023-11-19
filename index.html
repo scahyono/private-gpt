@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <title>Private GPT</title>
     <script>
@@ -90,7 +91,7 @@
 
             request.onsuccess = function(event) {
                 var listItem = document.createElement('li');
-                listItem.textContent = 'Sent: ' + prompt + ', Received: ' + content;
+                listItem.textContent = '⬆️: ' + prompt + ', ⬇️: ' + content;
                 document.getElementById('message-list').appendChild(listItem);
             };
 

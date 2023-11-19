@@ -3,6 +3,13 @@
 <head>
     <title>Private GPT</title>
     <script>
+        window.onload = function() {
+            const apiKey = localStorage.getItem('openai_api_key');
+            if (apiKey) {
+                document.getElementById('api-key').placeholder = "Change OpenAI API Key";
+            }
+        };
+
         // Function to store the API Key in LocalStorage
         function storeApiKey() {
             const apiKey = document.getElementById('api-key').value;
@@ -94,6 +101,7 @@
 </head>
 <body>
     <h1>Private GPT</h1>
+    <p>Your data is private to you.</p>
     <input type="text" id="api-key" placeholder="Enter OpenAI API Key" />
     <button onclick="storeApiKey()">Store API Key</button>
     <br><br>

@@ -1,12 +1,9 @@
 # Private GPT
 
 Private GPT is a ChatGPT application that stores your API Key and messages in your local database in Chrome/Edge. This ensures that your data remains private and secure.
+TRY NOW! at at [https://privategpt.netlify.app/](https://privategpt.netlify.app/).
 
 ![image](https://github.com/scahyono/privategpt/assets/2072698/a8cf5d0b-91ae-4416-8c1c-2026ec1631e2)
-
-## Demo
-
-You can try out Private GPT at [https://privategpt.netlify.app/](https://privategpt.netlify.app/).
 
 ## Usage
 

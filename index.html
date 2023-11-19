@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
     <title>Private GPT</title>
     <script>
         window.onload = function() {
@@ -42,7 +43,7 @@
                 var cursor = event.target.result;
                 if (cursor) {
                     var listItem = document.createElement('li');
-                    listItem.textContent = 'Sent: ' + cursor.value.sent + ', Received: ' + cursor.value.received;
+                    listItem.textContent = '⬆️: ' + cursor.value.sent + ', ⬇️: ' + cursor.value.received;
                     document.getElementById('message-list').appendChild(listItem);
                     cursor.continue();
                 }

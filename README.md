@@ -16,7 +16,7 @@ You can try out Private GPT at [https://private-gpt.netlify.app/](https://privat
 
 ## About
 
-This project is developed by [Wishful](https://www.wishful.ai/), a company dedicated to creating AI solutions that respect user privacy.
+This project is developed by [Wishful.AI](https://www.wishful.ai/), a company dedicated to creating AI solutions that respect user privacy.
 
 ## License
 

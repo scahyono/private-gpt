@@ -96,7 +96,7 @@
             document.getElementById('message-input').value = '';
 
             const promptToSend = previousMessages + '⬆️: ' + prompt;
-            const response = await fetch('/.netlify/functions/callOpenAi', {
+            const response = await fetch('/.netlify/functions/streamOpenAi', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -107,22 +107,55 @@
                 })
             });
 
-            const data = await response.json();
-            const content = data.choices[0].message.content;
+            // Get the reader from the body
+            const reader = response.body.getReader();
 
-            // Add the sent and received messages to the database
-            var request = db.transaction(["message"], "readwrite")
-            .objectStore("message")
-            .add({ sent: prompt, received: content });
+            var listItem = document.createElement('li');
+            listItem.textContent = '⬆️: ' + prompt + ', ⬇️: ' ;
+            document.getElementById('message-list').appendChild(listItem);
 
-            request.onsuccess = function(event) {
-                var listItem = document.createElement('li');
-                listItem.textContent = '⬆️: ' + prompt + ', ⬇️: ' + content;
-                document.getElementById('message-list').appendChild(listItem);
-            };
+            // Read the stream
+            while (true) {
+                const { done, value } = await reader.read();
 
-            request.onerror = function(event) {
-                alert("Unable to add data\r\nMessage is already exist in your database! ");
+                // When no more data needs to be consumed, break the loop
+                if (done) {
+                    break;
+                }
+
+                // Convert the Uint8Array to a string
+                const string = new TextDecoder("utf-8").decode(value);
+
+                // Split the string into separate events
+                const events = string.split('\n\n');
+
+                for (const event of events) {
+                    // Each event has the format "event: message\ndata: {...}"
+                    // We only want the data part
+                    const dataString = event.split('\n').find(line => line.startsWith('data: '));
+
+                    if (dataString) {
+                        // Remove the "data: " prefix and parse the JSON
+                        const data = JSON.parse(dataString.slice(6));
+
+                        // Concatenate the content
+                        if (data.choices[0].delta && data.choices[0].delta.content) {
+                            listItem.textContent += data.choices[0].delta.content;
+                        }
+
+                        // If the finish_reason is not null, the response is complete
+                        if (data.choices[0].finish_reason) {
+                            // Add the sent and received messages to the database
+                            var request = db.transaction(["message"], "readwrite")
+                            .objectStore("message")
+                            .add({ sent: prompt, received: listItem.textContent });
+
+                            request.onerror = function(event) {
+                                alert("Unable to add data\r\nMessage is already exist in your database! ");
+                            }
+                        }
+                    }
+                }
             }
         }
     </script>
